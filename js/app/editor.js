@@ -71,6 +71,7 @@ export class Editor {
   }
 
   setContent(content) {
+    console.log('setting content to', content);
     this._editor.dispatch({
       changes: {
         from: 0,

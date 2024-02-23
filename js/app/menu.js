@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-
+import { openDB } from 'idb';
 import { Actions } from '../lib/actions.js';
 
 export class Menu extends Actions {
@@ -22,7 +22,7 @@ export class Menu extends Actions {
    * @param {DOMElement} parent
    */
   constructor(parent, editor) {
-    super();
+    super(editor);
     // Get toggle button and menu
     this._toggle = parent.querySelector('.actions--toggle');
     this._menu = parent.querySelector('.actions--menu');
@@ -114,7 +114,8 @@ export class Menu extends Actions {
         case 'KeyO':
           e.preventDefault();
           // Meta + O
-          this.open();
+          console.log('this.editor');
+          this.open(this.editor);
           break;
         // Focus
         case 'KeyF':

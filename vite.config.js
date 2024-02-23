@@ -16,8 +16,11 @@
 
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
+import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
+  server: { https: true },
+  plugins: [mkcert()],
   build: {
     emptyOutDir: false,
     rollupOptions: {

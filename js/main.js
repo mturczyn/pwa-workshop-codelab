@@ -14,7 +14,25 @@
  limitations under the License.
  */
 
+import { openDB } from 'idb';
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', function (event) {
+  // Prevent Chrome 67 and earlier from automatically showing the prompt
+  event.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt = event;
+  console.log('>>>', 'PWA installation event', 'beforeinstallprompt');
+});
+
 window.addEventListener('DOMContentLoaded', async () => {
+  const db = await openDB('settings-store', 1, {
+    upgrade(db) {
+      db.createObjectStore('settings');
+    },
+  });
+
   // Set up the editor
   const { Editor } = await import('./app/editor.js');
   const editor = new Editor(document.body);
@@ -23,8 +41,25 @@ window.addEventListener('DOMContentLoaded', async () => {
   const { Menu } = await import('./app/menu.js');
   new Menu(document.querySelector('.actions'), editor);
 
+  editor.onUpdate(async (content) => {
+    await db.put('settings', content, 'content');
+  });
   // Set the initial state in the editor
   const defaultText = `# Welcome to PWA Edit!\n\nTo leave the editing area, press the \`esc\` key, then \`tab\` or \`shift+tab\`.`;
 
-  editor.setContent(defaultText);
+  editor.setContent((await db.get('settings', 'content')) || defaultText);
+
+  const { NightMode } = await import('./app/night-mode.js');
+  new NightMode(
+    document.querySelector('#mode'),
+    async (mode) => {
+      editor.setTheme(mode);
+      await db.put('settings', mode, 'nightmode');
+    },
+    await db.get('settings', 'nightmode'),
+  );
+
+  // Set up install prompt
+  const { Install } = await import('./lib/install.js');
+  new Install(document.querySelector('#install'), deferredPrompt);
 });
