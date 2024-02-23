@@ -23,7 +23,24 @@ warmStrategyCache({
   strategy: pageCache,
 });
 
-registerRoute(({ request }) => request.pathname === '/preview', strategy([pageCache]));
+registerRoute(
+  ({ request }) => request.pathname === '/preview',
+  strategy([
+    // Get header and beginning of body
+    () => '<!DOCTYPE html><html lang="en"><head></head><body>',
+    // Add some strings in
+    () => `<h1>Hello from ${new Date()}</h1>`,
+    // Build the body dynamically
+    async ({ event, request, url, params }) => {
+      // ...
+      const p = new Promise((resolve) => setTimeout(resolve('AWAITED RESULT'), 2000));
+      const result = await p;
+      return `<p>This uses awaited result: ${result}</p>`;
+    },
+    // Get rest of HTML
+    () => '</body></html>',
+  ]),
+);
 
 registerRoute(({ request }) => request.mode === 'navigate', pageCache);
 
