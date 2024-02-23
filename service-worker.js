@@ -3,6 +3,7 @@ import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { registerRoute } from 'workbox-routing';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { strategy } from 'workbox-streams';
 
 // Set up page cache
 const pageCache = new CacheFirst({
@@ -21,6 +22,8 @@ warmStrategyCache({
   urls: ['/index.html', '/'],
   strategy: pageCache,
 });
+
+registerRoute(({ request }) => request.pathname === '/preview', strategy([pageCache]));
 
 registerRoute(({ request }) => request.mode === 'navigate', pageCache);
 
