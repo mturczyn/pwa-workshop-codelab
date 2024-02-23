@@ -35,7 +35,7 @@ registerRoute(
       // ...
       const p = new Promise((resolve) => setTimeout(resolve('AWAITED RESULT'), 2000));
       const result = await p;
-      return `<p>This uses awaited result: ${result}</p>`;
+      return `<p>This uses awaited result: ${result}</p><p>Stringified event:</p><p>${JSON.stringify(event)}</p>`;
     },
     // Get rest of HTML
     () => '</body></html>',
