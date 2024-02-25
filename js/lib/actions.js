@@ -18,7 +18,16 @@ import { openDB } from 'idb';
 export class Actions {
   constructor(editor) {
     this.handle;
+    this.previewWindow;
     this.editor = editor;
+
+    window.addEventListener('beforeunload', (event) => {
+      if (!this.previewWindow) {
+        return;
+      }
+      this.previewWindow.close();
+      this.previewWindow = null;
+    });
 
     openDB('settings-store', 1, {
       upgrade(db) {
@@ -100,40 +109,122 @@ export class Actions {
     const fileContent = (await file.text()) || '';
 
     this.editor.setContent(fileContent);
-    // for (const cb of this._fileLoaded) {
-    //   cb(fileContent);
-    // }
-
-    // Get the file content.
-    // Also available, slice(), stream(), arrayBuffer()
-    // const content = await file.text()
-
-    // const fileSlice = await file.slice(0, 100);
-    // const content = await fileSlice.text();
   }
 
   /**
    * Function to call when the save button is triggered
    */
-  async save() {}
+  async save() {
+    // If we don't have file opened, we let user pick the file
+    // with open file dialog.
+    if (!this.handle) {
+      this.saveAs();
+      return;
+    }
+
+    // create a FileSystemWritableFileStream to write to
+    const writableStream = await this.handle.createWritable();
+
+    // write our file
+    await writableStream.write(this.editor.content());
+
+    // close the file and write the contents to disk.
+    await writableStream.close();
+  }
 
   /**
    * Function to call when the duplicate/save as button is triggered
    */
-  async saveAs() {}
+  async saveAs() {
+    const handle = await window.showSaveFilePicker({
+      types: [
+        {
+          accept: {
+            'text/markdown': ['.md', '.markdown'],
+          },
+        },
+      ],
+    });
+
+    document.title = 'PWA Edit | ' + handle.name;
+
+    this.handle = handle;
+
+    const db = await openDB('settings-store', 1, {
+      upgrade(db) {
+        db.createObjectStore('settings');
+      },
+    });
+
+    await db.put('settings', handle, 'filehandle');
+
+    // create a FileSystemWritableFileStream to write to
+    const writableStream = await this.handle.createWritable();
+
+    // write our file
+    await writableStream.write(this.editor.content());
+
+    // close the file and write the contents to disk.
+    await writableStream.close();
+  }
 
   /**
    * Reset the editor and file handler
    */
-  async reset() {}
+  async reset() {
+    console.log('>>>', 'Resetting...');
+    document.title = 'PWA Edit';
+    this.editor.setContent('');
+    this.handle = null;
+    const db = await openDB('settings-store');
+    await db.delete('settings', 'filehandle');
+  }
 
   /**
    * Function to call when the preview button is triggered
    */
-  async preview() {}
+  async preview() {
+    if (!!this.previewWindow) {
+      this.previewWindow.close();
+      this.previewWindow = null;
+      return;
+    }
+    let screenDetails = await window.getScreenDetails();
+    let primaryScreen = screenDetails.screens.find((s) => s.isPrimary);
+
+    console.log(primaryScreen);
+
+    let halfWidth = primaryScreen.width / 2;
+    this.previewWindow = window.open('/preview', 'preview-window', `left=${halfWidth},top=${primaryScreen.availTop},width=${halfWidth},height=${primaryScreen.height}`);
+  }
 
   /**
    * Function to call when the focus button is triggered
    */
-  async focus() {}
+  async focus() {
+    // The wake lock sentinel.
+    let wakeLock = null;
+
+    // Function that attempts to request a screen wake lock.
+    const requestWakeLock = async () => {
+      try {
+        wakeLock = await navigator.wakeLock.request();
+        console.log('>>>', 'wake lock requested');
+        wakeLock.addEventListener('release', () => {
+          console.log('Screen Wake Lock released:', wakeLock.released);
+        });
+        console.log('Screen Wake Lock released:', wakeLock.released);
+      } catch (err) {
+        console.error(`${err.name}, ${err.message}`);
+      }
+    };
+
+    // Request a screen wake lock…
+    await requestWakeLock();
+    // …and release it again after 5s.
+    window.setTimeout(() => {
+      wakeLock.release();
+      wakeLock = null;
+    }, 5000);
+  }
 }
