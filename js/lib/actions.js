@@ -17,6 +17,7 @@ import { openDB } from 'idb';
 
 export class Actions {
   constructor(editor) {
+    this.handle;
     this.editor = editor;
 
     openDB('settings-store', 1, {
@@ -29,13 +30,9 @@ export class Actions {
         console.log('>>>', 'Did not find file from other session!');
         return;
       }
-      console.log('>>>', 'Found file from other session!');
 
-      document.title = 'PWA Edit | ' + handle.name;
-      const file = await handle.getFile();
-      const fileContent = (await file.text()) || '';
-      console.log('>>>', 'file contents from cached file (from indexDB)');
-      editor.setContent(fileContent);
+      this.handle = handle;
+      alert('Found unfinished file. Click "Open" to load it.');
     });
   }
 
@@ -43,6 +40,39 @@ export class Actions {
    * Function to call when the open button is triggered
    */
   async open() {
+    // fileHandle is a FileSystemFileHandle
+    // withWrite is a boolean set to true if write
+    let verifyPermission = async function (fileHandle, withWrite) {
+      const opts = {};
+      if (withWrite) {
+        opts.mode = 'readwrite';
+      }
+
+      // Check if we already have permission, if so, return true.
+      let actualPermission = await fileHandle.queryPermission(opts);
+      console.log('>>>', 'actualPermission', actualPermission);
+      if (actualPermission === 'granted') {
+        return true;
+      }
+
+      // Request permission to the file, if the user grants permission, return true.
+      if ((await fileHandle.requestPermission(opts)) === 'granted') {
+        return true;
+      }
+
+      // The user did not grant permission, return false.
+      return false;
+    };
+
+    if (!!this.handle && (await verifyPermission(this.handle, true))) {
+      document.title = 'PWA Edit | ' + this.handle.name;
+      const file = await this.handle.getFile();
+      const fileContent = (await file.text()) || '';
+      console.log('>>>', 'file contents from cached file (from indexDB)');
+      this.editor.setContent(fileContent);
+      return;
+    }
+
     // Have the user select a file.
     const [handle] = await window.showOpenFilePicker({
       types: [
