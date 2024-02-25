@@ -6,5 +6,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   const db = await openDB('settings-store');
   const content = (await db.get('settings', 'content')) || '';
 
+  console.log('>>>', 'preview code is being executed!');
   preview.innerHTML = marked(content);
 });

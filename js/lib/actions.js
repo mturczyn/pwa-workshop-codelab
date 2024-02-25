@@ -19,6 +19,8 @@ export class Actions {
   constructor(editor) {
     this.handle;
     this.previewWindow;
+    // The wake lock sentinel.
+    this.wakeLock;
     this.editor = editor;
 
     window.addEventListener('beforeunload', (event) => {
@@ -192,7 +194,7 @@ export class Actions {
     let screenDetails = await window.getScreenDetails();
     let primaryScreen = screenDetails.screens.find((s) => s.isPrimary);
 
-    console.log(primaryScreen);
+    console.log('>>>', primaryScreen);
 
     let halfWidth = primaryScreen.width / 2;
     this.previewWindow = window.open('/preview', 'preview-window', `left=${halfWidth},top=${primaryScreen.availTop},width=${halfWidth},height=${primaryScreen.height}`);
@@ -202,18 +204,21 @@ export class Actions {
    * Function to call when the focus button is triggered
    */
   async focus() {
-    // The wake lock sentinel.
-    let wakeLock = null;
+    if (!!this.wakeLock) {
+      this.wakeLock.release();
+      this.wakeLock = null;
+      return;
+    }
 
     // Function that attempts to request a screen wake lock.
     const requestWakeLock = async () => {
       try {
-        wakeLock = await navigator.wakeLock.request();
+        this.wakeLock = await navigator.wakeLock.request();
         console.log('>>>', 'wake lock requested');
-        wakeLock.addEventListener('release', () => {
-          console.log('Screen Wake Lock released:', wakeLock.released);
+        this.wakeLock.addEventListener('release', () => {
+          console.log('Screen Wake Lock released:', this.wakeLock.released);
         });
-        console.log('Screen Wake Lock released:', wakeLock.released);
+        console.log('Screen Wake Lock released:', this.wakeLock.released);
       } catch (err) {
         console.error(`${err.name}, ${err.message}`);
       }
@@ -221,10 +226,5 @@ export class Actions {
 
     // Request a screen wake lock…
     await requestWakeLock();
-    // …and release it again after 5s.
-    window.setTimeout(() => {
-      wakeLock.release();
-      wakeLock = null;
-    }, 5000);
   }
 }
