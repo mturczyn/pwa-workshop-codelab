@@ -64,7 +64,7 @@ export class Actions {
       return false;
     };
 
-    if (!!this.handle && (await verifyPermission(this.handle, true))) {
+    if (!!this.handle && confirm('Would you like to load unfinished file?') && (await verifyPermission(this.handle, true))) {
       document.title = 'PWA Edit | ' + this.handle.name;
       const file = await this.handle.getFile();
       const fileContent = (await file.text()) || '';
