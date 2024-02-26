@@ -15,6 +15,13 @@
  */
 
 import { openDB } from 'idb';
+import { wrap } from 'comlink';
+
+let worker = new SharedWorker(new URL('worker.js', import.meta.url), {
+  type: 'module',
+});
+
+let compiler = wrap(worker.port);
 
 let deferredPrompt;
 
@@ -42,7 +49,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   new Menu(document.querySelector('.actions'), editor);
 
   editor.onUpdate(async (content) => {
-    await db.put('settings', content, 'content');
+    await Promise.all([db.put('settings', content, 'content'), compiler.set(content)]);
   });
   // Set the initial state in the editor
   const defaultText = `# Welcome to PWA Edit!\n\nTo leave the editing area, press the \`esc\` key, then \`tab\` or \`shift+tab\`.`;
