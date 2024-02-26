@@ -23,8 +23,17 @@ warmStrategyCache({
   strategy: pageCache,
 });
 
+/**
+ * Streaming response.
+ * It was used to stream repsonse for preview page, but this
+ * might break other feature (live preview) - and this was not
+ * point of the exercise, so here we comment out matching route
+ * and disable streaming for all.
+ * To test it, simply change matcher to return true for all
+ * or use commented implementation.
+ */
 registerRoute(
-  ({ request }) => request.pathname === '/preview',
+  ({ request }) => false, //request.url.includes('preview/index'),
   strategy([
     // Get header and beginning of body
     () => '<!DOCTYPE html><html lang="en"><head></head><body>',
