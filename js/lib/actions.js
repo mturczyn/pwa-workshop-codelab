@@ -197,7 +197,7 @@ export class Actions {
     console.log('>>>', primaryScreen);
 
     let halfWidth = primaryScreen.width / 2;
-    this.previewWindow = window.open('/preview', 'preview-window', `left=${halfWidth},top=${primaryScreen.availTop},width=${halfWidth},height=${primaryScreen.height}`);
+    this.previewWindow = window.open('/preview/index.html', 'preview-window', `left=${halfWidth},top=${primaryScreen.availTop},width=${halfWidth},height=${primaryScreen.height}`);
   }
 
   /**
