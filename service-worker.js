@@ -4,6 +4,8 @@ import { registerRoute } from 'workbox-routing';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { strategy } from 'workbox-streams';
+import { openDB } from 'idb';
+import { marked } from 'marked';
 
 // Set up page cache
 const pageCache = new CacheFirst({
@@ -33,21 +35,30 @@ warmStrategyCache({
  * or use commented implementation.
  */
 registerRoute(
-  ({ request }) => false, //request.url.includes('preview/index'),
+  ({ request }) => request.url.includes('preview-streaming/index'),
   strategy([
     // Get header and beginning of body
-    () => '<!DOCTYPE html><html lang="en"><head></head><body>',
-    // Add some strings in
-    () => `<h1>Hello from ${new Date()}</h1>`,
-    // Build the body dynamically
+    () => `
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <link rel="icon" type="image/svg+xml" href="/images/logo.svg" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>PWA Edit | Markdown Preview With Streaming</title>
+      <link rel="stylesheet" href="/css/preview.css" />
+      <script type="module" src="/js/preview-streaming.js"></script>
+    </head>
+    <body>
+      <main class="preview">`,
+    // Build the body dynamically from IndexedDB
     async ({ event, request, url, params }) => {
       // ...
-      const p = new Promise((resolve) => setTimeout(resolve('AWAITED RESULT'), 2000));
-      const result = await p;
-      return `<p>This uses awaited result: ${result}</p><p>Stringified event:</p><p>${JSON.stringify(event)}</p>`;
+      const db = await openDB('settings-store');
+      const content = (await db.get('settings', 'content')) || defaultText;
+      return marked(content);
     },
     // Get rest of HTML
-    () => '</body></html>',
+    () => '</main></body></html>',
   ]),
 );
 

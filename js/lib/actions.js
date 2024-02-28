@@ -191,13 +191,15 @@ export class Actions {
       this.previewWindow = null;
       return;
     }
+
+    const useStreamingPreview = confirm('There are two previews available - one with streaming (loads the content from IndexedDB) and one taking the content directly from the editor.\nWould you like to use preview with streaming?');
+    const previewToUse = useStreamingPreview ? 'preview-streaming' : 'preview';
+
     let screenDetails = await window.getScreenDetails();
     let primaryScreen = screenDetails.screens.find((s) => s.isPrimary);
 
-    console.log('>>>', primaryScreen);
-
     let halfWidth = primaryScreen.width / 2;
-    this.previewWindow = window.open('/preview/index.html', 'preview-window', `left=${halfWidth},top=${primaryScreen.availTop},width=${halfWidth},height=${primaryScreen.height}`);
+    this.previewWindow = window.open(`/${previewToUse}/index.html`, 'preview-window', `left=${halfWidth},top=${primaryScreen.availTop},width=${halfWidth},height=${primaryScreen.height}`);
   }
 
   /**
