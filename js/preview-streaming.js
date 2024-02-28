@@ -1,5 +1,3 @@
-import { openDB } from 'idb';
-import { marked } from 'marked';
 import { wrap, proxy } from 'comlink';
 
 let worker = new SharedWorker(new URL('worker.js', import.meta.url), {
