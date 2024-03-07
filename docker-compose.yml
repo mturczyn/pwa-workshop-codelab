@@ -1,0 +1,10 @@
+# docker-compose.yaml
+version: '3.8'
+
+services:
+  frontend:
+    container_name: pwa-workshop-codelab
+    build:
+      context: .
+    ports:
+      - 5173:5173
