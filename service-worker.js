@@ -45,8 +45,6 @@ registerRoute(
       <link rel="icon" type="image/svg+xml" href="/images/logo.svg" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>PWA Edit | Markdown Preview With Streaming</title>
-      <link rel="stylesheet" href="/css/preview.css" />
-      <script type="module" src="/js/preview-streaming.js"></script>
     </head>
     <script>
         import { wrap, proxy } from 'comlink';
