@@ -48,6 +48,37 @@ registerRoute(
       <link rel="stylesheet" href="/css/preview.css" />
       <script type="module" src="/js/preview-streaming.js"></script>
     </head>
+    <script>
+        import { wrap, proxy } from 'comlink';
+
+        let worker = new SharedWorker(new URL('worker.js', import.meta.url), {
+          type: 'module',
+        });
+        let compiler = wrap(worker.port);
+
+        compiler.subscribe(
+          proxy((value) => {
+            const preview = document.querySelector('.preview');
+            preview.innerHTML = value.compiled;
+          }),
+        );
+    </script>
+    <style>
+        body {
+          margin: 0;
+          font-family: sans-serif;
+        }
+
+        .preview {
+          max-width: 80ch;
+          margin: 0 auto;
+        }
+
+        img, video {
+          max-width: 100%;
+          height: auto;
+        }
+    </style>
     <body>
       <main class="preview">`,
     // Build the body dynamically from IndexedDB
