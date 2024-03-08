@@ -19,8 +19,10 @@ import { defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
-  server: { https: true, host: '0.0.0.0' },
-  plugins: [mkcert()],
+  // HTTPS is out of the box with Vite version greater than 5 (we're using 5.1.5).
+  // server: { https: true, host: '0.0.0.0' },
+  // plugins: [mkcert()],
+  server: { host: '0.0.0.0' },
   build: {
     emptyOutDir: false,
     rollupOptions: {

@@ -46,10 +46,16 @@ registerRoute(
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>PWA Edit | Markdown Preview With Streaming</title>
     </head>
-    <script type="module">
+    <!-- THIS WAS ANOTHER TRY TO MAKE COMLINK LIBRARY WORK HERE, BUT WITH NO SUCCESS. -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/comlink@4.3.1/dist/umd/comlink.min.js"></script> -->
+    <script>
         // THIS WON'T WORK AS SUCH HTML DOCUMENT IS NOT INCLUDED IN VITE BUILD PROCESS
         // AND IS NOT HANDLED CORRECTLY WHEN DEPLOYED.
         import { wrap, proxy } from 'comlink';
+
+        // This was for case, where library was fetched from CDN above.
+        // let wrap = window.Comlink.wrap
+        // let proxy = window.Comlink.proxy
 
         let worker = new SharedWorker(new URL('worker.js', import.meta.url), {
           type: 'module',
