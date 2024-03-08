@@ -23,7 +23,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // 'service-worker': '/service-worker.js',
-        'service-worker': resolve(__dirname, '/service-worker.js'),
+        'service-worker': resolve(__dirname, './service-worker.js'),
       },
       output: {
         format: 'iife',

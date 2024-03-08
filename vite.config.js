@@ -16,7 +16,7 @@
 
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
-import mkcert from 'vite-plugin-mkcert';
+// import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
   // HTTPS is out of the box with Vite version greater than 5 (we're using 5.1.5).
