@@ -46,7 +46,9 @@ registerRoute(
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>PWA Edit | Markdown Preview With Streaming</title>
     </head>
-    <script>
+    <script type="module">
+        // THIS WON'T WORK AS SUCH HTML DOCUMENT IS NOT INCLUDED IN VITE BUILD PROCESS
+        // AND IS NOT HANDLED CORRECTLY WHEN DEPLOYED.
         import { wrap, proxy } from 'comlink';
 
         let worker = new SharedWorker(new URL('worker.js', import.meta.url), {
